@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dharmayana — E-pooja Prototype v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Noto+Sans:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-dark:#1d4749;
+    --green-darker:#0f2627;
+    --orange:#ee9322;
+    --orange-dark:#c9711a;
+    --gold:#f3d169;
+    --maroon:#85301a;
+    --grey-4:#565151;
+    --bg-light:#fefaf6;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Noto Sans',sans-serif;
+    background:#dcdcdc;
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;padding:24px;
+  }
+  .phone{
+    width:375px;height:812px;
+    background:var(--bg-light);
+    border-radius:40px;overflow:hidden;position:relative;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  }
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;transition:transform .4s cubic-bezier(.4,0,.2,1);}
+  .screen.hidden{transform:translateX(100%);}
+  .status-bar{height:22px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:11px;font-weight:500;color:var(--white);flex-shrink:0;}
+  .status-bar.on-light{color:var(--green-dark);}
+
+  /* ============ HOME ============ */
+  #home{background:var(--bg-light);}
+  .header{
+    background:var(--green-dark);
+    padding:10px 16px 14px;
+    display:flex;align-items:center;justify-content:space-between;
+    flex-shrink:0;
+    border-radius:0 0 18px 18px;
+  }
+  .header .brand{display:flex;align-items:center;gap:8px;}
+  .header .brand-icon{width:22px;height:22px;color:var(--gold);font-size:18px;}
+  .header .brand-text .name{font-family:'Ubuntu',sans-serif;font-weight:500;font-size:15px;color:var(--white);}
+  .header .brand-text .loc{font-size:10px;color:rgba(255,255,255,0.7);margin-top:1px;}
+  .header .right{display:flex;align-items:center;gap:10px;}
+  .header .gear{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;color:var(--white);font-size:13px;}
+  .header .login{background:var(--orange);color:var(--white);font-family:'Ubuntu',sans-serif;font-weight:500;font-size:11px;padding:6px 14px;border-radius:20px;}
+
+  .home-scroll{flex:1;overflow-y:auto;padding-bottom:24px;}
+  .home-scroll::-webkit-scrollbar{display:none;}
+
+  .carousel{display:flex;gap:10px;overflow-x:auto;padding:12px 16px 10px;scroll-snap-type:x mandatory;}
+  .carousel::-webkit-scrollbar{display:none;}
+  .banner{flex-shrink:0;width:264px;height:150px;border-radius:16px;position:relative;overflow:hidden;scroll-snap-align:center;background:linear-gradient(160deg,#7a3a1f,#1d4749);}
+  .banner .tag{position:absolute;top:9px;left:9px;background:rgba(0,0,0,0.5);color:#fff;font-family:'Ubuntu',sans-serif;font-weight:500;font-size:8px;letter-spacing:.4px;text-transform:uppercase;padding:3px 6px;border-radius:16px;}
+  .banner .share{position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);color:#fff;font-size:9px;font-family:'Ubuntu',sans-serif;font-weight:500;padding:6px 10px;border-radius:8px;}
+  .banner .script{position:absolute;bottom:44px;left:0;right:0;text-align:center;color:var(--gold);font-family:'Great Vibes',cursive;font-size:26px;}
+
+  .carousel-dots{display:flex;align-items:center;justify-content:center;gap:6px;margin:2px 0 18px;}
+  .pill-count{background:var(--green-dark);color:#fff;font-family:'Ubuntu',sans-serif;font-weight:500;font-size:10px;letter-spacing:1px;padding:3px 8px;border-radius:20px;}
+  .dot{width:6px;height:6px;border-radius:50%;background:#d8d3c8;}
+
+  .section-divider{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 16px 14px;}
+  .section-divider .line{width:22px;height:2px;background:var(--green-dark);opacity:.4;border-radius:2px;}
+  .section-divider span{font-family:'Ubuntu',sans-serif;font-weight:500;font-size:10px;letter-spacing:.6px;color:var(--green-dark);text-transform:uppercase;}
+
+  .cat-card{margin:0 16px 16px;border-radius:22px;overflow:hidden;box-shadow:0 0 14px rgba(0,0,0,0.12);border:1px solid rgba(0,0,0,0.06);background:#fff;}
+  .cat-card .top{padding:13px 16px;position:relative;overflow:hidden;}
+  .cat-card .top.gold{background:linear-gradient(135deg,#ffe9a8,var(--gold));color:var(--maroon);}
+  .cat-card .top.navy{background:linear-gradient(135deg,#22305e,#0e1730);color:#fff;}
+  .cat-card .top.sage{background:linear-gradient(135deg,#8fae82,#4c7a5a);color:#fff;}
+  .cat-card .top.deep{background:linear-gradient(135deg,#2b3568,#131a3a);color:#fff;}
+  .cat-card .top .t{font-family:'Ubuntu',sans-serif;font-weight:500;font-size:15px;}
+  .cat-card .top .s{font-size:9.5px;opacity:.85;margin-top:2px;max-width:70%;}
+  .cat-card .row{display:flex;gap:14px;padding:12px 14px 14px;}
+  .cat-card .item{display:flex;flex-direction:column;align-items:center;gap:4px;width:56px;}
+  .cat-card .icon{width:44px;height:44px;border-radius:50%;background:var(--bg-light);border:1px solid rgba(0,0,0,0.05);}
+  .cat-card .label{font-family:'Ubuntu',sans-serif;font-size:8.5px;color:var(--grey-4);text-align:center;}
+
+  .twocol{display:flex;gap:12px;margin:0 16px 20px;}
+  .mini-card{flex:1;background:#fff;border:1px solid var(--gold);border-radius:16px;padding:14px;text-align:center;box-shadow:0 0 7px rgba(0,0,0,0.1);}
+  .mini-card .t{font-family:'Ubuntu',sans-serif;font-weight:500;font-size:13px;color:var(--maroon);}
+  .mini-card .s{font-size:8.5px;color:var(--grey-4);margin-top:3px;}
+
+  .pulse-ring{position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--orange);opacity:0;animation:pulse 2.4s ease-out infinite;}
+  @keyframes pulse{0%{opacity:.6;transform:scale(.9);}100%{opacity:0;transform:scale(1.25);}}
+
+  /* ============ E-POOJA ============ */
+  #epooja{background:#0a1211;}
+  .ep-bg{position:absolute;inset:0;transition:opacity 1s ease;}
+  .ep-bg.idle{background:radial-gradient(ellipse at 50% 38%, #2b3b3a 0%, #16211f 55%, #08100f 100%);}
+  .ep-bg.pooja{background:radial-gradient(ellipse at 50% 32%, #ffd98a 0%, var(--orange) 32%, #7a4a1f 62%, var(--green-dark) 100%);}
+  .ep-bg.meditate{background:radial-gradient(ellipse at 50% 32%, #cfe9ff 0%, #4f8fdc 32%, #274a6e 62%, var(--green-dark) 100%);}
+  .ep-bg{opacity:0;}
+  #epooja[data-state="idle"] .ep-bg.idle{opacity:1;}
+  #epooja[data-state="closing"] .ep-bg.idle{opacity:1;}
+  #epooja[data-state="pooja"] .ep-bg.pooja{opacity:1;}
+  #epooja[data-state="meditate"] .ep-bg.meditate{opacity:1;}
+
+  .ep-content{position:relative;z-index:2;display:flex;flex-direction:column;height:100%;color:#fff;}
+
+  .ep-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;transition:opacity .5s ease;}
+  .ep-topbar.faded{opacity:0;pointer-events:none;}
+  .icon-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;border:none;cursor:pointer;}
+
+  .ep-label{text-align:center;margin-top:2px;transition:opacity .5s ease;}
+  .ep-label .eyebrow{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;opacity:.6;}
+  .ep-label .name{font-family:'Ubuntu',sans-serif;font-weight:500;font-size:17px;margin-top:2px;}
+  .ep-label .auspicious{font-size:10px;line-height:1.45;color:#fff2df;opacity:.75;margin-top:8px;padding:0 34px;}
+
+  .diyas{position:absolute;top:0;left:0;right:0;height:110px;z-index:1;pointer-events:none;}
+  .diya{position:absolute;top:0;width:2px;background:rgba(255,255,255,0.25);}
+  .diya .lamp{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);font-size:26px;filter:grayscale(1) brightness(.6);transition:filter .8s ease;}
+  #epooja[data-state="pooja"] .diya .lamp{filter:grayscale(0) brightness(1);}
+  .diya1{left:12%;height:44px;} .diya1 .lamp{transition-delay:0s;}
+  .diya2{left:26%;height:78px;} .diya2 .lamp{transition-delay:.25s;}
+  .diya3{right:12%;height:44px;} .diya3 .lamp{transition-delay:.5s;}
+  .diya4{right:26%;height:78px;} .diya4 .lamp{transition-delay:.75s;}
+
+  .aarthi-flame{position:absolute;top:50%;left:50%;margin-left:-16px;margin-top:-16px;font-size:30px;opacity:0;pointer-events:none;z-index:3;filter:drop-shadow(0 0 10px rgba(255,180,80,0.7));}
+  .aarthi-flame.active{opacity:1;animation:aarthiCircle 3s linear infinite;}
+  @keyframes aarthiCircle{
+    0%{transform:translate(0px,-70px);}
+    12.5%{transform:translate(49px,-49px);}
+    25%{transform:translate(70px,0px);}
+    37.5%{transform:translate(49px,49px);}
+    50%{transform:translate(0px,70px);}
+    62.5%{transform:translate(-49px,49px);}
+    75%{transform:translate(-70px,0px);}
+    87.5%{transform:translate(-49px,-49px);}
+    100%{transform:translate(0px,-70px);}
+  }
+
+  .ep-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;overflow:hidden;z-index:1;}
+  .deity-wrap{perspective:700px;cursor:grab;position:relative;z-index:2;}
+  .deity-wrap:active{cursor:grabbing;}
+  .deity{width:150px;height:220px;position:relative;transform-style:preserve-3d;transition:transform .15s ease-out;}
+  .deity-face{position:absolute;inset:0;border-radius:70px 70px 20px 20px;background:linear-gradient(180deg,#f0c88a,#c9711a 85%);box-shadow:0 0 60px rgba(238,147,34,0.3), inset 0 0 30px rgba(0,0,0,0.15);backface-visibility:hidden;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,0.65);text-align:center;padding:16px;font-family:'Noto Sans',sans-serif;}
+  #epooja[data-state="idle"] .deity-face,#epooja[data-state="closing"] .deity-face{background:linear-gradient(180deg,#5a6b6a,#2a3838 85%);box-shadow:0 0 40px rgba(93,202,165,0.15);}
+  #epooja[data-state="meditate"] .deity-face{background:linear-gradient(180deg,#bcd9f5,#3f6fa8 85%);box-shadow:0 0 60px rgba(79,143,220,0.3);}
+
+  .rotate-hint{position:absolute;bottom:100px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.7;transition:opacity .6s ease;pointer-events:none;z-index:3;}
+  .rotate-hint.gone{opacity:0;}
+  .rotate-hint .arc-icon{width:26px;height:26px;animation:sway 1.8s ease-in-out infinite;}
+  @keyframes sway{0%,100%{transform:rotate(-14deg);}50%{transform:rotate(14deg);}}
+  .rotate-hint .txt{font-size:9.5px;}
+
+  .limit-flash{position:absolute;inset:0;background:rgba(255,255,255,0.06);opacity:0;pointer-events:none;transition:opacity .15s ease;z-index:5;}
+  .limit-flash.show{opacity:1;}
+
+  .incense{position:absolute;width:3px;height:60px;bottom:190px;border-radius:3px;background:rgba(230,220,200,0.4);opacity:0;transition:opacity .6s ease;z-index:2;}
+  .incense.left{left:38%;} .incense.right{right:38%;}
+  #epooja[data-state="pooja"] .incense{opacity:1;}
+  .smoke{position:absolute;bottom:100%;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:rgba(255,255,255,0.25);filter:blur(4px);animation:rise 3.5s ease-in infinite;}
+  @keyframes rise{0%{transform:translateY(0) translateX(0) scale(0.6);opacity:.5;}100%{transform:translateY(-90px) translateX(14px) scale(1.6);opacity:0;}}
+
+  .mantra-ticker{position:absolute;bottom:150px;left:24px;right:24px;text-align:center;font-family:'Noto Sans',sans-serif;font-size:11px;line-height:1.5;color:#fff2df;opacity:0;transition:opacity .6s ease;z-index:3;min-height:32px;}
+  #epooja[data-state="pooja"] .mantra-ticker, #epooja[data-state="meditate"] .mantra-ticker{opacity:1;}
+
+  .petals-layer{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:4;}
+  .petal{position:absolute;top:-20px;font-size:14px;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(680px) rotate(340deg);opacity:0.2;}}
+
+  .ep-status-line{position:absolute;bottom:118px;left:0;right:0;text-align:center;font-size:10px;letter-spacing:.4px;text-transform:uppercase;opacity:0;transition:opacity .5s ease;z-index:3;color:#fff;}
+  #epooja[data-state="pooja"] .ep-status-line, #epooja[data-state="meditate"] .ep-status-line{opacity:.75;}
+
+  .ep-actions{padding:0 16px 26px;display:flex;flex-direction:column;gap:8px;z-index:4;transition:opacity .4s ease;}
+  .ep-actions.hidden-actions{opacity:0;pointer-events:none;height:0;padding:0 16px;overflow:hidden;}
+  .btn-primary{background:var(--orange);color:#fff;border:none;border-radius:12px;padding:13px;font-family:'Ubuntu',sans-serif;font-weight:500;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .btn-secondary{background:transparent;border:1px solid rgba(255,255,255,0.35);color:#fff;border-radius:12px;padding:13px;font-family:'Ubuntu',sans-serif;font-weight:500;font-size:13px;cursor:pointer;}
+
+  .closing-card{position:absolute;bottom:0;left:0;right:0;padding:22px 20px 30px;text-align:center;opacity:0;pointer-events:none;transform:translateY(12px);transition:opacity .6s ease, transform .6s ease;z-index:6;}
+  .closing-card.show{opacity:1;pointer-events:auto;transform:translateY(0);}
+  .closing-card .blessing{font-family:'Great Vibes',cursive;font-size:22px;color:#fff2df;margin-bottom:14px;}
+  .closing-actions{display:flex;gap:8px;}
+  .closing-actions .btn-secondary, .closing-actions .btn-primary{flex:1;}
+
+  /* ---- profile selection modal ---- */
+  .profile-modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:20;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+  .profile-modal-overlay.show{opacity:1;pointer-events:auto;}
+  .profile-modal{background:var(--bg-light);width:100%;border-radius:24px 24px 0 0;padding:18px 18px 20px;max-height:80%;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);}
+  .profile-modal-overlay.show .profile-modal{transform:translateY(0);}
+  .pm-header{text-align:center;margin-bottom:2px;}
+  .pm-title{font-family:'Ubuntu',sans-serif;font-weight:500;font-size:15px;color:var(--green-dark);}
+  .pm-sub{font-size:10px;color:var(--grey-4);margin-top:2px;}
+  .pm-list{overflow-y:auto;margin:14px 0;display:flex;flex-direction:column;gap:8px;flex:1;}
+  .profile-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:1.5px solid rgba(0,0,0,0.08);background:#fff;cursor:pointer;}
+  .profile-row.selected{border-color:var(--green-dark);background:rgba(29,71,73,0.06);}
+  .profile-row .avatar-sm{width:36px;height:36px;border-radius:50%;background:var(--green-dark);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-family:'Ubuntu',sans-serif;font-weight:500;}
+  .profile-row .pinfo{flex:1;min-width:0;}
+  .profile-row .pname{font-family:'Ubuntu',sans-serif;font-weight:500;font-size:13px;color:#222;}
+  .profile-row .pmeta{font-size:9px;color:var(--grey-4);margin-top:2px;}
+  .profile-row .check{width:20px;height:20px;border-radius:50%;border:1.5px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;}
+  .profile-row.selected .check{background:var(--green-dark);border-color:var(--green-dark);}
+  .add-profile-row{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:14px;border:1.5px dashed rgba(0,0,0,0.18);color:var(--green-dark);font-family:'Ubuntu',sans-serif;font-weight:500;font-size:12px;cursor:pointer;}
+  .new-profile-form{display:flex;flex-direction:column;gap:8px;background:#fff;border-radius:14px;padding:12px;border:1px solid rgba(0,0,0,0.08);}
+  .new-profile-form input{border:1px solid rgba(0,0,0,0.15);border-radius:8px;padding:8px 10px;font-size:12px;font-family:'Noto Sans',sans-serif;width:100%;}
+  .new-profile-form .save-btn{background:var(--green-dark);color:#fff;border:none;border-radius:8px;padding:9px;font-family:'Ubuntu',sans-serif;font-weight:500;font-size:12px;cursor:pointer;}
+  .pm-footer{padding-top:4px;}
+  .pm-count{font-size:9.5px;color:var(--grey-4);text-align:center;margin-bottom:8px;}
+  .pm-continue{width:100%;background:var(--orange);color:#fff;border:none;border-radius:12px;padding:13px;font-family:'Ubuntu',sans-serif;font-weight:500;font-size:13px;cursor:pointer;}
+  .pm-continue:disabled{background:#ddd;color:#999;cursor:not-allowed;}
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- ============ HOME ============ -->
+  <div class="screen" id="home">
+    <div class="status-bar on-light">
+      <span>9:41</span><span>●●●● 5G 🔋</span>
+    </div>
+    <div class="header">
+      <div class="brand">
+        <div class="brand-icon">🪷</div>
+        <div class="brand-text">
+          <div class="name">Dharmayāna</div>
+          <div class="loc">Ujjain ▾</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="gear">⚙</div>
+        <div class="login">LOGIN</div>
+      </div>
+    </div>
+
+    <div class="home-scroll">
+      <div class="section-divider" style="margin-top:14px;"><div class="line"></div><span>Updates</span><div class="line"></div></div>
+      <div class="carousel" id="updatesCarousel" style="padding-left:56px;padding-right:56px;">
+        <div class="banner" style="background:linear-gradient(160deg,#4a2f14,var(--green-dark));cursor:pointer;" onclick="goToEpooja()">
+          <div class="pulse-ring" style="inset:8px;border-color:rgba(255,255,255,0.5);"></div>
+          <div class="tag">Devta of the Day</div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:90px;background:linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.62) 100%);"></div>
+          <div style="position:absolute;bottom:12px;left:12px;right:12px;color:#fff;">
+            <div style="font-family:'Ubuntu',sans-serif;font-weight:700;font-size:22px;line-height:1.1;">Ganesha</div>
+            <div style="display:inline-flex;align-items:center;gap:5px;background:var(--orange);color:#fff;font-family:'Ubuntu',sans-serif;font-weight:500;font-size:10px;padding:5px 10px;border-radius:20px;margin-top:8px;">▶ Tap for e-pooja</div>
+          </div>
+        </div>
+        <div class="banner" style="background:linear-gradient(160deg,#22305e,#0e1730);">
+          <div class="tag">Verse of the Day</div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:70px;background:linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%);"></div>
+          <div style="position:absolute;bottom:12px;left:12px;right:12px;color:#fff;">
+            <div style="font-family:'Ubuntu',sans-serif;font-weight:500;font-size:13px;">"Karmanye vadhikaraste..."</div>
+            <div style="font-size:9px;opacity:.8;margin-top:3px;">Bhagavad Gita 2.47</div>
+          </div>
+        </div>
+        <div class="banner" style="background:linear-gradient(160deg,#a9832c,#4a3a10);">
+          <div class="tag">Panchanga</div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:70px;background:linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%);"></div>
+          <div style="position:absolute;bottom:12px;left:12px;right:12px;color:#fff;">
+            <div style="font-family:'Ubuntu',sans-serif;font-weight:500;font-size:14px;">31 · Ekadashi</div>
+            <div style="font-size:9px;opacity:.8;margin-top:3px;">Today's tithi for Ujjain</div>
+          </div>
+        </div>
+        <div class="banner" style="background:linear-gradient(160deg,#1a1a2e,#3a3a5e);">
+          <div class="tag">Rashifal</div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:70px;background:linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%);"></div>
+          <div style="position:absolute;bottom:12px;left:12px;right:12px;color:#fff;">
+            <div style="font-family:'Ubuntu',sans-serif;font-weight:500;font-size:14px;">Mesha Rashifal</div>
+            <div style="font-size:9px;opacity:.8;margin-top:3px;">Your day ahead</div>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-dots">
+        <div class="pill-count">1/4</div>
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+
+      <div class="section-divider"><div class="line"></div><span>Discover Dharmayana</span><div class="line"></div></div>
+      <div class="cat-card">
+        <div class="top gold">
+          <div class="t">Panchanga &amp; Muhurta</div>
+          <div class="s">Panchang and Muhurat for Ujjain.</div>
+        </div>
+        <div class="row">
+          <div class="item"><div class="icon"></div><div class="label">Panchanga</div></div>
+          <div class="item"><div class="icon"></div><div class="label">Fix your Muhurta</div></div>
+          <div class="item"><div class="icon"></div><div class="label">Festivals</div></div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="top navy">
+          <div class="t">Jyotisha &amp; Rashifal</div>
+          <div class="s">Expert Jyotishis available for your needs.</div>
+        </div>
+        <div class="row">
+          <div class="item"><div class="icon"></div><div class="label">Ask a Jyotishi</div></div>
+          <div class="item"><div class="icon"></div><div class="label">Janm Kundali</div></div>
+          <div class="item"><div class="icon"></div><div class="label">Talk to a Jyotishi</div></div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="top sage">
+          <div class="t">Prarthna &amp; Pooja</div>
+          <div class="s">When you have to do something devotional.</div>
+        </div>
+        <div class="row">
+          <div class="item"><div class="icon"></div><div class="label">Prarthna</div></div>
+          <div class="item"><div class="icon"></div><div class="label">Book a Pooja</div></div>
+          <div class="item"><div class="icon"></div><div class="label">Devta</div></div>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="top deep">
+          <div class="t">Health &amp; Wellness</div>
+          <div class="s">When body, mind, and soul need care.</div>
+        </div>
+        <div class="row">
+          <div class="item"><div class="icon"></div><div class="label">Dhyana</div></div>
+          <div class="item"><div class="icon"></div><div class="label">Ayurvedic Consultation</div></div>
+        </div>
+      </div>
+
+      <div class="section-divider"><div class="line"></div><span>More on Dharmayana</span><div class="line"></div></div>
+      <div class="twocol">
+        <div class="mini-card"><div class="t">Learn More</div><div class="s">For the curious mind — go deeper into Dharma.</div></div>
+        <div class="mini-card"><div class="t">Reminders</div><div class="s">Set and manage your daily reminders.</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ E-POOJA ============ -->
+  <div class="screen hidden" id="epooja" data-state="idle">
+    <div class="ep-bg idle"></div>
+    <div class="ep-bg pooja"></div>
+    <div class="ep-bg meditate"></div>
+
+    <div class="ep-content">
+      <div class="status-bar"><span>9:41</span><span>●●●● 5G 🔋</span></div>
+
+      <div class="ep-topbar" id="epTopbar">
+        <button class="icon-btn" onclick="goHome()">←</button>
+        <div style="display:flex;gap:8px;">
+          <button class="icon-btn" onclick="resetView()" aria-label="Reset view">⟲</button>
+          <button class="icon-btn" id="muteBtn" onclick="toggleMute(event)">🔊</button>
+        </div>
+      </div>
+
+      <div class="ep-label" id="epLabel">
+        <div class="eyebrow">Devta of the day</div>
+        <div class="name">Ganesha</div>
+        <div class="auspicious">Wednesday is considered highly auspicious for Ganesha worship — a favorable day to seek his blessings.</div>
+      </div>
+
+      <div class="ep-stage" id="epStage">
+        <div class="diyas">
+          <div class="diya diya1"><div class="lamp">🪔</div></div>
+          <div class="diya diya2"><div class="lamp">🪔</div></div>
+          <div class="diya diya3"><div class="lamp">🪔</div></div>
+          <div class="diya diya4"><div class="lamp">🪔</div></div>
+        </div>
+        <div class="limit-flash" id="limitFlash"></div>
+        <div class="incense left"><div class="smoke" style="animation-delay:0s"></div></div>
+        <div class="incense right"><div class="smoke" style="animation-delay:1.6s"></div></div>
+
+        <div class="deity-wrap" id="deityWrap">
+          <div class="deity" id="deity">
+            <div class="deity-face">3D deity model placeholder<br>drag to rotate · scroll to zoom</div>
+          </div>
+        </div>
+        <div class="aarthi-flame" id="aarthiFlame">🪔</div>
+
+        <div class="rotate-hint" id="rotateHint">
+          <svg class="arc-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round">
+            <path d="M4 12a8 8 0 0 1 14-5"/><path d="M18 3v4h-4"/>
+          </svg>
+          <div class="txt">rotate · zoom to view</div>
+        </div>
+
+        <div class="petals-layer" id="petalsLayer"></div>
+      </div>
+
+      <div class="ep-status-line" id="epStatusLine">chanting mantras</div>
+      <div class="mantra-ticker" id="mantraTicker"></div>
+
+      <div class="ep-actions" id="epActions">
+        <button class="btn-primary" onclick="openProfileModal()">Start pooja 🪔</button>
+        <button class="btn-secondary" onclick="startMeditate()">Japa</button>
+      </div>
+
+      <div class="closing-card" id="closingCard">
+        <div class="blessing" id="closingBlessing">May this bring you peace, Suhas</div>
+        <div class="closing-actions">
+          <button class="btn-secondary" onclick="resetToIdle()">Go back</button>
+          <button class="btn-primary" onclick="goHome()">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-modal-overlay" id="profileModalOverlay" onclick="if(event.target===this) closeProfileModal()">
+      <div class="profile-modal">
+        <div class="pm-header">
+          <div class="pm-title">Doing pooja for</div>
+          <div class="pm-sub">Select up to 5 profiles</div>
+        </div>
+        <div class="pm-list" id="pmList"></div>
+        <div class="pm-footer">
+          <div class="pm-count" id="pmCount">0 selected</div>
+          <button class="pm-continue" id="pmContinue" disabled onclick="confirmProfilesAndStart()">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const home = document.getElementById('home');
+
+  // ---- infinite scroll loop for the Updates carousel ----
+  (function setupInfiniteCarousel(){
+    const track = document.getElementById('updatesCarousel');
+    if(!track) return;
+    const originalCards = Array.from(track.children);
+    const cloneSetBefore = originalCards.map(c=>c.cloneNode(true));
+    const cloneSetAfter = originalCards.map(c=>c.cloneNode(true));
+    track.innerHTML = '';
+    [...cloneSetBefore, ...originalCards, ...cloneSetAfter].forEach(c=>track.appendChild(c));
+
+    let oneSetWidth = 0;
+    function measure(){
+      oneSetWidth = originalCards.reduce((sum,c)=>sum + c.getBoundingClientRect().width + 10, 0);
+    }
+    measure();
+    track.scrollLeft = oneSetWidth; // start showing the real (middle) set
+
+    let ticking=false;
+    track.addEventListener('scroll', ()=>{
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(()=>{
+        if(track.scrollLeft < oneSetWidth * 0.4){
+          track.scrollLeft += oneSetWidth;
+        } else if(track.scrollLeft > oneSetWidth * 1.6){
+          track.scrollLeft -= oneSetWidth;
+        }
+        ticking = false;
+      });
+    });
+    window.addEventListener('resize', ()=>{ measure(); });
+  })();
+
+  const epooja = document.getElementById('epooja');
+  const epTopbar = document.getElementById('epTopbar');
+  const epActions = document.getElementById('epActions');
+  const closingCard = document.getElementById('closingCard');
+  const closingBlessing = document.getElementById('closingBlessing');
+  const rotateHint = document.getElementById('rotateHint');
+  const petalsLayer = document.getElementById('petalsLayer');
+  const mantraTicker = document.getElementById('mantraTicker');
+  const statusLine = document.getElementById('epStatusLine');
+
+  function goToEpooja(){
+    home.classList.add('hidden');
+    epooja.classList.remove('hidden');
+    resetChromeFade();
+  }
+  function goHome(){
+    clearAllTimers();
+    resetToIdle();
+    epooja.classList.add('hidden');
+    home.classList.remove('hidden');
+  }
+
+  // ---- chrome auto-fade ----
+  let fadeTimer;
+  function resetChromeFade(){
+    clearTimeout(fadeTimer);
+    epTopbar.classList.remove('faded');
+    fadeTimer = setTimeout(()=>{ epTopbar.classList.add('faded'); }, 3500);
+  }
+  epooja.addEventListener('pointerdown', resetChromeFade);
+
+  // ---- drag to rotate + wheel/pinch to zoom (restricted) ----
+  const deity = document.getElementById('deity');
+  const stage = document.getElementById('epStage');
+  const flash = document.getElementById('limitFlash');
+  let dragging=false, startX=0, angle=0, startAngle=0, scale=1;
+  const ANGLE_LIMIT=55, SCALE_MIN=0.85, SCALE_MAX=1.3;
+
+  function applyTransform(){
+    deity.style.transform = `scale(${scale}) rotateY(${angle}deg)`;
+  }
+  function hideHintOnce(){ dismissHintForSession(); }
+  let hintDismissedForSession = false;
+  function dismissHintForSession(){
+    hintDismissedForSession = true;
+    rotateHint.classList.add('gone');
+  }
+
+  stage.addEventListener('pointerdown',(e)=>{
+    dragging=true; startX=e.clientX; startAngle=angle; deity.style.transition='none';
+  });
+  window.addEventListener('pointermove',(e)=>{
+    if(!dragging) return;
+    hideHintOnce();
+    const dx = e.clientX-startX;
+    let target = startAngle + dx*0.4;
+    if(target>ANGLE_LIMIT || target<-ANGLE_LIMIT){
+      const over = target>ANGLE_LIMIT ? target-ANGLE_LIMIT : target+ANGLE_LIMIT;
+      target = target>ANGLE_LIMIT ? ANGLE_LIMIT+over*0.15 : -ANGLE_LIMIT+over*0.15;
+      flash.classList.add('show');
+    } else { flash.classList.remove('show'); }
+    angle = target;
+    applyTransform();
+  });
+  window.addEventListener('pointerup',()=>{
+    if(!dragging) return;
+    dragging=false; flash.classList.remove('show');
+    deity.style.transition='transform .35s cubic-bezier(.34,1.56,.64,1)';
+    if(angle>ANGLE_LIMIT) angle=ANGLE_LIMIT;
+    if(angle<-ANGLE_LIMIT) angle=-ANGLE_LIMIT;
+    applyTransform();
+  });
+
+  stage.addEventListener('wheel',(e)=>{
+    e.preventDefault();
+    hideHintOnce();
+    scale = Math.min(SCALE_MAX, Math.max(SCALE_MIN, scale - e.deltaY*0.0015));
+    applyTransform();
+  },{passive:false});
+
+  // basic pinch zoom for touch
+  let pinchStartDist=null, pinchStartScale=1;
+  stage.addEventListener('touchmove',(e)=>{
+    if(e.touches.length===2){
+      hideHintOnce();
+      const [a,b]=e.touches;
+      const dist = Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
+      if(pinchStartDist===null){ pinchStartDist=dist; pinchStartScale=scale; }
+      scale = Math.min(SCALE_MAX, Math.max(SCALE_MIN, pinchStartScale*(dist/pinchStartDist)));
+      applyTransform();
+    }
+  },{passive:true});
+  stage.addEventListener('touchend',(e)=>{ if(e.touches.length<2) pinchStartDist=null; });
+
+  function toggleMute(e){ e.target.textContent = e.target.textContent==='🔊'?'🔇':'🔊'; }
+
+  function resetView(){
+    angle = 0;
+    scale = 1;
+    deity.style.transition = 'transform .4s cubic-bezier(.34,1.56,.64,1)';
+    applyTransform();
+    resetChromeFade();
+  }
+
+  // ---- petals ----
+  const petalEmojiPooja=['🌼','🌸','🌺'];
+  const petalEmojiMeditate=['🌸','❀'];
+  let petalInterval=null;
+  function spawnPetal(emojiSet){
+    const p=document.createElement('div');
+    p.className='petal';
+    p.textContent=emojiSet[Math.floor(Math.random()*emojiSet.length)];
+    p.style.left=(Math.random()*90+2)+'%';
+    const dur=(3.5+Math.random()*2.5).toFixed(2);
+    p.style.animationDuration=dur+'s';
+    petalsLayer.appendChild(p);
+    setTimeout(()=>p.remove(), dur*1000+200);
+  }
+  function startPetals(emojiSet, everyMs){
+    stopPetals();
+    petalInterval=setInterval(()=>spawnPetal(emojiSet), everyMs);
+  }
+  function stopPetals(){ if(petalInterval){ clearInterval(petalInterval); petalInterval=null; } }
+
+  // ---- mantra ticker (personalized to selected profiles) ----
+  let mantraIndex=0, mantraTimer=null, activeMantraLines=[];
+  function startMantra(){
+    activeMantraLines = buildMantraLines();
+    mantraIndex=0;
+    mantraTicker.textContent=activeMantraLines[0];
+    mantraTimer=setInterval(()=>{
+      mantraIndex=(mantraIndex+1)%activeMantraLines.length;
+      mantraTicker.style.opacity=0;
+      setTimeout(()=>{ mantraTicker.textContent=activeMantraLines[mantraIndex]; mantraTicker.style.opacity=1; },300);
+    },2200);
+  }
+  function stopMantra(){
+    if(mantraTimer){ clearInterval(mantraTimer); mantraTimer=null; }
+    mantraTicker.style.opacity='';
+    mantraTicker.textContent='';
+  }
+  const MAX_PROFILES = 5;
+  let profiles = [
+    {id:'self', name:'Suhas (You)', gothra:'Bharadwaj', rashi:'Mesha', nakshatra:'Ashwini'},
+    {id:'mom',  name:'Mom',         gothra:'Kashyap',    rashi:'Vrishabha', nakshatra:'Rohini'},
+    {id:'dad',  name:'Dad',         gothra:'Vashishta',  rashi:'Simha', nakshatra:'Magha'}
+  ];
+  let selectedIds = new Set(['self']);
+  let newProfileCounter = 1;
+  let showingNewForm = false;
+
+  const profileModalOverlay = document.getElementById('profileModalOverlay');
+  const pmList = document.getElementById('pmList');
+  const pmCount = document.getElementById('pmCount');
+  const pmContinue = document.getElementById('pmContinue');
+
+  function initials(name){
+    return name.replace(/\(.*?\)/g,'').trim().split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  }
+
+  function renderProfileList(){
+    pmList.innerHTML = '';
+    profiles.forEach(p=>{
+      const row = document.createElement('div');
+      row.className = 'profile-row' + (selectedIds.has(p.id) ? ' selected' : '');
+      row.innerHTML = `
+        <div class="avatar-sm">${initials(p.name)}</div>
+        <div class="pinfo">
+          <div class="pname">${p.name}</div>
+          <div class="pmeta">${p.gothra} gothra · ${p.rashi} rashi · ${p.nakshatra}</div>
+        </div>
+        <div class="check">${selectedIds.has(p.id) ? '✓' : ''}</div>
+      `;
+      row.onclick = ()=>toggleProfile(p.id);
+      pmList.appendChild(row);
+    });
+
+    if(showingNewForm){
+      const form = document.createElement('div');
+      form.className = 'new-profile-form';
+      form.innerHTML = `
+        <input type="text" id="npName" placeholder="Name">
+        <input type="text" id="npGothra" placeholder="Gothra">
+        <input type="text" id="npRashi" placeholder="Rashi">
+        <input type="text" id="npNakshatra" placeholder="Nakshatra">
+        <button class="save-btn" onclick="saveNewProfile()">Save profile</button>
+      `;
+      pmList.appendChild(form);
+    } else {
+      const addRow = document.createElement('div');
+      addRow.className = 'add-profile-row';
+      addRow.textContent = '+ Add new profile';
+      addRow.onclick = ()=>{ showingNewForm=true; renderProfileList(); };
+      pmList.appendChild(addRow);
+    }
+    updatePmFooter();
+  }
+
+  function toggleProfile(id){
+    if(selectedIds.has(id)){
+      selectedIds.delete(id);
+    } else {
+      if(selectedIds.size >= MAX_PROFILES){
+        pmCount.textContent = `Maximum ${MAX_PROFILES} profiles — remove one to add another`;
+        pmCount.style.color = '#c0392b';
+        return;
+      }
+      selectedIds.add(id);
+    }
+    renderProfileList();
+  }
+
+  function saveNewProfile(){
+    const name = document.getElementById('npName').value.trim();
+    if(!name) return;
+    const gothra = document.getElementById('npGothra').value.trim() || '—';
+    const rashi = document.getElementById('npRashi').value.trim() || '—';
+    const nakshatra = document.getElementById('npNakshatra').value.trim() || '—';
+    const id = 'custom' + (newProfileCounter++);
+    profiles.push({id, name, gothra, rashi, nakshatra});
+    if(selectedIds.size < MAX_PROFILES) selectedIds.add(id);
+    showingNewForm = false;
+    renderProfileList();
+  }
+
+  function updatePmFooter(){
+    pmCount.style.color = '';
+    pmCount.textContent = `${selectedIds.size} of ${MAX_PROFILES} selected`;
+    pmContinue.disabled = selectedIds.size === 0;
+  }
+
+  function openProfileModal(){
+    showingNewForm = false;
+    renderProfileList();
+    profileModalOverlay.classList.add('show');
+  }
+  function closeProfileModal(){
+    profileModalOverlay.classList.remove('show');
+  }
+  function confirmProfilesAndStart(){
+    if(selectedIds.size === 0) return;
+    closeProfileModal();
+    startPooja();
+  }
+
+  function buildMantraLines(){
+    const chosen = profiles.filter(p=>selectedIds.has(p.id));
+    const names = chosen.map(p=>p.name.replace(/\(.*?\)/g,'').trim()).join(', ');
+    const first = chosen[0];
+    return [
+      'Om Gan Ganapataye Namah',
+      `...for ${names}...`,
+      `${first.rashi} rashi, ${first.nakshatra} nakshatra...`,
+      `may Ganesha's grace remove all obstacles.`
+    ];
+  }
+
+  // ---- ritual sequencing ----
+  const aarthiFlame = document.getElementById('aarthiFlame');
+  let seqTimers=[];
+  function clearAllTimers(){
+    stopPetals(); stopMantra(); stopMeditationTicker();
+    seqTimers.forEach(t=>clearTimeout(t));
+    seqTimers=[];
+    aarthiFlame.classList.remove('active');
+    petalsLayer.innerHTML='';
+  }
+
+  function startPooja(){
+    clearAllTimers();
+    epooja.setAttribute('data-state','pooja');
+    epActions.classList.add('hidden-actions');
+    dismissHintForSession();
+
+    // stage 1: diyas lighting — held for 5s
+    statusLine.textContent='lighting diyas';
+
+    // stage 2: aarthi — flame circles the deity clockwise, held for 5s
+    seqTimers.push(setTimeout(()=>{
+      statusLine.textContent='performing aarthi';
+      aarthiFlame.classList.add('active');
+      startMantra();
+    }, 5000));
+
+    // stage 3: flowers fall, aarthi ends — held for 5s
+    seqTimers.push(setTimeout(()=>{
+      aarthiFlame.classList.remove('active');
+      statusLine.textContent='offering flowers';
+      startPetals(petalEmojiPooja, 300);
+    }, 10000));
+
+    // stage 4: ritual complete, fade back to vignette
+    seqTimers.push(setTimeout(()=>finishRitual('pooja'), 15000));
+  }
+  function startMeditate(){
+    clearAllTimers();
+    epooja.setAttribute('data-state','meditate');
+    epActions.classList.add('hidden-actions');
+    dismissHintForSession();
+    statusLine.textContent='chanting for Ganesha';
+    startMeditationTicker();
+    startPetals(petalEmojiMeditate, 650);
+    seqTimers.push(setTimeout(()=>finishRitual('meditate'), 7000));
+  }
+
+  const meditationLines=[
+    'Om Gan Ganapataye Namah',
+    'Let the chant settle around you.',
+    'No need to follow along — just listen.'
+  ];
+  let meditationTimer=null, meditationIndex=0;
+  function startMeditationTicker(){
+    meditationIndex=0;
+    mantraTicker.textContent=meditationLines[0];
+    meditationTimer=setInterval(()=>{
+      meditationIndex=(meditationIndex+1)%meditationLines.length;
+      mantraTicker.style.opacity=0;
+      setTimeout(()=>{ mantraTicker.textContent=meditationLines[meditationIndex]; mantraTicker.style.opacity=1; },300);
+    },2400);
+  }
+  function stopMeditationTicker(){
+    if(meditationTimer){ clearInterval(meditationTimer); meditationTimer=null; }
+    mantraTicker.style.opacity='';
+    mantraTicker.textContent='';
+  }
+  function finishRitual(type){
+    clearAllTimers();
+    epooja.setAttribute('data-state','closing');
+    if(type==='pooja'){
+      const chosen = profiles.filter(p=>selectedIds.has(p.id));
+      const self = chosen.find(p=>p.id==='self');
+      const selfName = self ? self.name.replace(/\(.*?\)/g,'').trim() : (chosen[0]?chosen[0].name.replace(/\(.*?\)/g,'').trim():'you');
+      closingBlessing.textContent = chosen.length > 1
+        ? `May this pooja bring you and your loved ones peace, ${selfName}`
+        : `May this pooja bring you peace, ${selfName}`;
+    } else {
+      closingBlessing.textContent = 'May you carry this calm with you';
+    }
+    closingCard.classList.add('show');
+  }
+  function resetToIdle(){
+    closingCard.classList.remove('show');
+    epooja.setAttribute('data-state','idle');
+    epActions.classList.remove('hidden-actions');
+    statusLine.textContent='';
+    if(!hintDismissedForSession){ rotateHint.classList.remove('gone'); }
+    angle=0; scale=1; applyTransform();
+  }
+</script>
+
+</body>
+</html>
